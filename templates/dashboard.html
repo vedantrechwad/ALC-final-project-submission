@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="position: relative; text-align: center; padding: 20px;">
+    <p style="position: absolute; top: 10px; right: 10px; font-weight: bold; font-size: 16px;">
+      Hello {{ user_name }}!!
+    </p>
+    <br>
+
+    <h2>Welcome to Virtual ATM</h2>
+    <p>Balance: ₹{{ balance }}</p>
+
+    <button onclick="openModal('deposit')">Deposit</button>
+    <button onclick="openModal('withdraw')">Withdraw</button>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form action="{{ url_for('transactions') }}" method="GET" style="display:inline;">
+        <button type="submit">View Transaction History</button>
+    </form>
+    <form action="{{ url_for('logout') }}" method="POST" style="display:inline;">
+        <button type="submit">Logout</button>
+    </form>
+
+    <!-- Modal for Deposit/Withdraw -->
+    <div id="transactionModal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Deposit Amount</h2>
+            <form id="transactionForm" method="POST">
+                <div id="amountSection">
+                    <label>Amount:</label>
+                    <input type="text" id="amount" name="amount" required readonly>
+                    <div id="amountKeyboard" style="display: flex; flex-direction: column; margin-top: 10px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <button type="button" onclick="addToAmount('1')" style="flex: 1;">1</button>
+                            <button type="button" onclick="addToAmount('2')" style="flex: 1;">2</button>
+                            <button type="button" onclick="addToAmount('3')" style="flex: 1;">3</button>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <button type="button" onclick="addToAmount('4')" style="flex: 1;">4</button>
+                            <button type="button" onclick="addToAmount('5')" style="flex: 1;">5</button>
+                            <button type="button" onclick="addToAmount('6')" style="flex: 1;">6</button>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <button type="button" onclick="addToAmount('7')" style="flex: 1;">7</button>
+                            <button type="button" onclick="addToAmount('8')" style="flex: 1;">8</button>
+                            <button type="button" onclick="addToAmount('9')" style="flex: 1;">9</button>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <button type="button" onclick="addToAmount('0')" style="flex: 1;">0</button>
+                            <button type="button" onclick="backspaceAmount()" style="flex: 1;">Backspace</button>
+                            <button type="button" onclick="clearAmount()" style="flex: 1;">Clear</button>
+                        </div>
+                    </div>
+                    <button type="button" onclick="showAtmPin()">Enter</button>
+                </div>
+                <div id="atmPinSection" style="display:none;">
+                    <label>ATM PIN:</label>
+                    <input type="password" id="atm_pin" name="atm_pin" required>
+                    <div id="keyboard" style="display: flex; flex-direction: column; margin-top: 10px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <button type="button" onclick="addToInput('1')">1</button>
+                            <button type="button" onclick="addToInput('2')">2</button>
+                            <button type="button" onclick="addToInput('3')">3</button>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <button type="button" onclick="addToInput('4')">4</button>
+                            <button type="button" onclick="addToInput('5')">5</button>
+                            <button type="button" onclick="addToInput('6')">6</button>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <button type="button" onclick="addToInput('7')">7</button>
+                            <button type="button" onclick="addToInput('8')">8</button>
+                            <button type="button" onclick="addToInput('9')">9</button>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <button type="button" onclick="addToInput('0')">0</button>
+                            <button type="button" onclick="backspace()" style="flex: 1;">Backspace</button>
+                            <button type="button" onclick="clearInput()" style="flex: 1;">Clear</button>
+                        </div>
+                        <div style="display: flex; justify-content: center; margin-top: 10px;">
+                            <button type="button" onclick="submitTransaction()">Enter</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .modal-content {
+            border: 1px solid #888;
+            padding: 20px;
+            position: fixed;
+            background-color: white;
+            z-index: 1000;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .close {
+            cursor: pointer;
+            float: right;
+            font-size: 1.2em;
+        }
+    </style>
+
+    <script>
+        const availableBalance = {{ balance }}; // Pass the available balance to JavaScript
+
+        function openModal(type) {
+            document.getElementById('transactionModal').style.display = 'block';
+            document.getElementById('modalTitle').innerText = type.charAt(0).toUpperCase() + type.slice(1) + ' Amount';
+            document.getElementById('transactionForm').action = '/' + type; // Set the form action based on type
+            document.getElementById('amountSection').style.display = 'block';
+            document.getElementById('atmPinSection').style.display = 'none';
+        }
+
+        function closeModal() {
+            document.getElementById('transactionModal').style.display = 'none';
+            document.getElementById('transactionForm').reset();
+            clearAmount();
+            clearInput();
+            document.getElementById('amountSection').style.display = 'block';
+            document.getElementById('atmPinSection').style.display = 'none';
+        }
+
+        function showAtmPin() {
+            const amountInput = document.getElementById('amount').value;
+            if (!amountInput || parseFloat(amountInput) <= 0) {
+                alert("Please enter a valid amount.");
+                return; // Prevent proceeding to the ATM PIN section
+            }
+            document.getElementById('amountSection').style.display = 'none';
+            document.getElementById('atmPinSection').style.display = 'block';
+        }
+
+        function addToAmount(value) {
+            const amountInput = document.getElementById('amount');
+            amountInput.value += value;
+        }
+
+        function clearAmount() {
+            document.getElementById('amount').value = '';
+        }
+
+        function backspaceAmount() {
+            const amountInput = document.getElementById('amount');
+            amountInput.value = amountInput.value.slice(0, -1);
+        }
+
+        function addToInput(value) {
+            const atmPinInput = document.getElementById('atm_pin');
+            atmPinInput.value += value;
+        }
+
+        function clearInput() {
+            document.getElementById('atm_pin').value = '';
+        }
+
+        function backspace() {
+            const atmPinInput = document.getElementById('atm_pin');
+            atmPinInput.value = atmPinInput.value.slice(0, -1);
+        }
+
+        function submitTransaction() {
+            const amountInput = document.getElementById('amount').value;
+            const amount = parseFloat(amountInput);
+
+            if (isNaN(amount) || amount <= 0) {
+                alert("Please enter a valid amount.");
+                return;
+            }
+
+            // if (amount > availableBalance) {
+            //     alert("Invalid balance: Amount exceeds available balance.");
+            //     return;
+            // }
+
+            document.getElementById('transactionForm').submit();
+        }
+    </script>
+</div>
+{% endblock %}
