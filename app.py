@@ -4,7 +4,6 @@ import sqlite3
 app = Flask(__name__)
 app.secret_key = 'secret_key'
 
-# Database initialization
 def init_db():
     conn = sqlite3.connect('atm.db')
     cursor = conn.cursor()
@@ -29,7 +28,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Initialize the database
+
 init_db()
 
 def get_user(username):
@@ -83,7 +82,7 @@ def get_all_users():
     cursor.execute('SELECT username FROM users')
     users = cursor.fetchall()
     conn.close()
-    return [user[0] for user in users]  # Extract usernames from tuples
+    return [user[0] for user in users]  
 
 @app.route('/')
 def index():
@@ -96,18 +95,18 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        # Admin login check directly with hardcoded admin credentials
+        
         if username == "admin" and password == "admin":
             session['username'] = username
-            session['user_name'] = "Admin"  # Set user name as 'Admin' for admin access
+            session['user_name'] = "Admin"  
             session['is_admin'] = True
             return redirect(url_for('admin'))
         
-        # Non-admin user check
+       
         user = get_user(username)
-        if user and user[1] == password:  # Check plain text password
+        if user and user[1] == password:  
             session['username'] = username
-            session['user_name'] = username  # Set the username as the displayed name
+            session['user_name'] = username  
             session['is_admin'] = False
             return redirect(url_for('dashboard'))
         else:
@@ -130,14 +129,14 @@ def add_user_route():
     password = request.form['password']
     atm_pin = request.form['atm_pin']
     
-    # Check if the username already exists
+    
     if get_user(username):
-        flash('User already exists', 'error')  # Use flash for better user feedback
-        return redirect(url_for('admin'))  # Redirect back to the admin page after adding
+        flash('User already exists', 'error')  
+        return redirect(url_for('admin'))  
 
-    add_user(username, password, atm_pin)  # Call the function to add the user
-    flash('User created successfully!', 'success')  # Notify success
-    return redirect(url_for('admin'))  # Redirect back to the admin page after adding
+    add_user(username, password, atm_pin)
+    flash('User created successfully!', 'success')  
+    return redirect(url_for('admin'))  
 
 @app.route('/transactions', methods=['GET'])
 def transactions():
@@ -145,8 +144,8 @@ def transactions():
         return redirect(url_for('login'))
     
     username = session['username']
-    transactions = get_transactions(username)  # Fetch transactions for the logged-in user
-    return render_template('transactions.html', transactions=transactions)  # Render a transactions template
+    transactions = get_transactions(username) 
+    return render_template('transactions.html', transactions=transactions) 
 
 @app.route('/download_transactions', methods=['GET'])
 def download_transactions():
@@ -154,11 +153,11 @@ def download_transactions():
         return redirect(url_for('login'))
 
     username = session['username']
-    transactions = get_transactions(username)  # Fetch transactions for the logged-in user
+    transactions = get_transactions(username)  
 
-    # Create a CSV response
+   
     def generate():
-        yield 'Transaction Type,Amount,Timestamp\n'  # CSV Header
+        yield 'Transaction Type,Amount,Timestamp\n' 
         for transaction in transactions:
             yield f"{transaction[0]},{transaction[1]},{transaction[2]}\n"
 
@@ -170,7 +169,7 @@ def dashboard():
         return redirect(url_for('login'))
     
     username = session['username']
-    user_name = session['user_name']  # Fetch the user's name from the session
+    user_name = session['user_name']  
     balance = get_balance(username)
     transactions = get_transactions(username)
     
@@ -214,8 +213,8 @@ def withdraw():
 
 @app.route('/logout', methods=['POST'])
 def logout():
-    session.clear()  # Clear the session
-    return redirect(url_for('login'))  # Redirect to the login page
+    session.clear()  
+    return redirect(url_for('login')) 
 
 if __name__ == '__main__':
     app.run(debug=True)
