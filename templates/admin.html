@@ -12,7 +12,7 @@
     {% endif %}
 {% endwith %}
 
-<!-- Form for adding users -->
+
 <form method="POST" action="{{ url_for('add_user_route') }}">
     <label>Username:</label>
     <input type="text" name="username" required>
@@ -23,14 +23,14 @@
     <button type="submit">Add User</button>
 </form>
 
-<p style="text-align: left;">Users:</p> <!-- Align Users text to the left -->
-<ul style="text-align: left;"> <!-- Ensure the list is also aligned -->
+<p style="text-align: left;">Users:</p> 
+<ul style="text-align: left;"> 
     {% for user in users %}
     <li>{{ user }}</li>
     {% endfor %}
 </ul>
 
-<!-- Form for logging out -->
+
 <form method="POST" action="{{ url_for('logout') }}">
     <button type="submit">Logout</button>
 </form>
