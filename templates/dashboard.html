@@ -24,7 +24,7 @@
         <button type="submit">Logout</button>
     </form>
 
-    <!-- Modal for Deposit/Withdraw -->
+    
     <div id="transactionModal" style="display:none;">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
@@ -111,12 +111,12 @@
     </style>
 
     <script>
-        const availableBalance = {{ balance }}; // Pass the available balance to JavaScript
+        const availableBalance = {{ balance }}; 
 
         function openModal(type) {
             document.getElementById('transactionModal').style.display = 'block';
             document.getElementById('modalTitle').innerText = type.charAt(0).toUpperCase() + type.slice(1) + ' Amount';
-            document.getElementById('transactionForm').action = '/' + type; // Set the form action based on type
+            document.getElementById('transactionForm').action = '/' + type; 
             document.getElementById('amountSection').style.display = 'block';
             document.getElementById('atmPinSection').style.display = 'none';
         }
@@ -134,7 +134,7 @@
             const amountInput = document.getElementById('amount').value;
             if (!amountInput || parseFloat(amountInput) <= 0) {
                 alert("Please enter a valid amount.");
-                return; // Prevent proceeding to the ATM PIN section
+                return; 
             }
             document.getElementById('amountSection').style.display = 'none';
             document.getElementById('atmPinSection').style.display = 'block';
